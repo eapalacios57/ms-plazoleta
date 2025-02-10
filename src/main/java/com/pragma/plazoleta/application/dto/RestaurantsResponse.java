@@ -3,11 +3,16 @@ package com.pragma.plazoleta.application.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class RestaurantsResponse {
 
-    private String name;
+    List<RestaurantDTO> listRestaurants;
+    int size;
+    int page;
+    long totalElements;
+    int totalPage;
 
-    private String urlLogo;
 }

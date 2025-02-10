@@ -1,21 +1,24 @@
 package com.pragma.plazoleta.domain.usecase;
 
 import com.pragma.plazoleta.domain.api.IRestaurantServicePort;
+import com.pragma.plazoleta.domain.model.RestaurantList;
 import com.pragma.plazoleta.domain.model.Restaurant;
+import com.pragma.plazoleta.domain.model.UserDetail;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.pragma.plazoleta.infraestructura.exception.NotFoundException;
 
 
-@RequiredArgsConstructor
 public class RestaurantUseCase implements IRestaurantServicePort {
 
     private final IRestaurantPersistencePort restaurantPersistencePort;
 
+    public RestaurantUseCase(IRestaurantPersistencePort restaurantPersistencePort) {
+        this.restaurantPersistencePort = restaurantPersistencePort;
+    }
 
     @Override
     public void saveRestaurant(Restaurant restaurant) {
+        this.validateRestaurant(restaurant.getNit());
         restaurantPersistencePort.saveRestaurant(restaurant);
     }
 
@@ -25,8 +28,20 @@ public class RestaurantUseCase implements IRestaurantServicePort {
     }
 
     @Override
-    public Page<Restaurant> getAllRestaurants(Pageable pageable) {
-        return restaurantPersistencePort.getAllRestaurants(pageable);
+    public RestaurantList getAllRestaurants(int size, int page) {
+        return restaurantPersistencePort.getAllRestaurants(size, page);
+    }
+
+    @Override
+    public void validateUserOwner(UserDetail userDetail) {
+        if(!userDetail.getRole().equals("OWNER")){
+            throw new NotFoundException("he user does not have the Owner role.");
+        }
+    }
+
+    @Override
+    public void validateRestaurant(String nit){
+        restaurantPersistencePort.validateRestaurant(nit);
     }
 
 }

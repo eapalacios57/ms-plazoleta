@@ -1,8 +1,8 @@
 package com.pragma.plazoleta.domain.api;
 
+import com.pragma.plazoleta.domain.model.RestaurantList;
 import com.pragma.plazoleta.domain.model.Restaurant;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.pragma.plazoleta.domain.model.UserDetail;
 
 public interface IRestaurantServicePort {
 
@@ -10,6 +10,10 @@ public interface IRestaurantServicePort {
 
     Restaurant getRestaurant(Long id);
 
-    Page<Restaurant> getAllRestaurants(Pageable pageable);
+    RestaurantList getAllRestaurants(int size, int page);
+
+    void validateUserOwner(UserDetail userDetail);
+
+    void validateRestaurant(String nit);
 
 }

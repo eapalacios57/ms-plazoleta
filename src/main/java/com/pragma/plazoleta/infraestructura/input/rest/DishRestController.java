@@ -2,8 +2,10 @@ package com.pragma.plazoleta.infraestructura.input.rest;
 
 import com.pragma.plazoleta.application.dto.MessageResponse;
 import com.pragma.plazoleta.application.dto.RegisterDishRequest;
+import com.pragma.plazoleta.application.dto.UpdateDishRequest;
 import com.pragma.plazoleta.application.handler.IDishHandler;
-import com.pragma.plazoleta.domain.model.Dish;
+import com.pragma.plazoleta.application.dto.DishByCategoryResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -19,7 +21,7 @@ public class DishRestController {
 
     @PreAuthorize("hasRole('OWNER')")
     @PostMapping
-    public ResponseEntity<MessageResponse> registerDish(@RequestBody RegisterDishRequest request) {
+    public ResponseEntity<MessageResponse> registerDish(@Valid @RequestBody RegisterDishRequest request) {
         try{
             dishHandler.saveDish(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(new MessageResponse("Dish created successfully."));
@@ -30,7 +32,7 @@ public class DishRestController {
 
     @PreAuthorize("hasRole('OWNER')")
     @PutMapping("/{dishId}")
-    public ResponseEntity<MessageResponse> updateDish(@PathVariable Long dishId, @RequestBody RegisterDishRequest request) {
+    public ResponseEntity<MessageResponse> updateDish(@PathVariable Long dishId,@Valid @RequestBody UpdateDishRequest request) {
         try{
             dishHandler.updateDish(request, dishId);
             return ResponseEntity.status(HttpStatus.OK).body(new MessageResponse("Dish update successfully."));
@@ -63,11 +65,13 @@ public class DishRestController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<Dish>> getDishesByCategory(@RequestParam Long categoryId,
-                                                                         @RequestParam(defaultValue = "0") int page,
-                                                                         @RequestParam(defaultValue = "10") int size)  {
+    public ResponseEntity<DishByCategoryResponse> getDishesByCategory(
+            @RequestParam Long restaurantId,
+            @RequestParam Long categoryId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size)  {
 
-            Page<Dish> dishes = dishHandler.getAllDishesByCategory(categoryId, page, size);
+            DishByCategoryResponse dishes = dishHandler.getAllDishesByCategory(restaurantId, categoryId, page, size);
             return ResponseEntity.status(HttpStatus.OK).body(dishes);
     }
 

@@ -1,16 +1,18 @@
-package com.pragma.plazoleta.application.handler.security;
+package com.pragma.plazoleta.infraestructura.configuration.security;
 
-import com.pragma.plazoleta.application.dto.UserDetailResponse;
+
+import com.pragma.plazoleta.domain.model.UserDetail;
+import com.pragma.plazoleta.infraestructura.JwtUtils;
 import com.pragma.plazoleta.infraestructura.exception.CustomAuthenticationEntryPoint;
+import com.pragma.plazoleta.infraestructura.exception.CustomJwtException;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -18,7 +20,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -31,8 +32,10 @@ import java.util.List;
 @AllArgsConstructor
 public class JwtTokenFilterHandler extends OncePerRequestFilter {
 
-    private final RestTemplate restTemplate;
+//    private final RestTemplate restTemplate;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final JwtUtils jwtUtils;
+    private final CustomJwtException customJwtException;
 
 
     @Override
@@ -40,8 +43,8 @@ public class JwtTokenFilterHandler extends OncePerRequestFilter {
         String token = extractTokenFromRequest(request);
         try{
             if (token != null) {
-                UserDetailResponse userDetail = validateToken(token);
-                if (userDetail != null && Boolean.TRUE.equals(userDetail.getTokenValid())) {
+                UserDetail userDetail = jwtUtils.extractUser(token);
+                if (userDetail != null && userDetail.getToken() != null) {
                     List<GrantedAuthority> authorities = new ArrayList<>();
                     authorities.add(new SimpleGrantedAuthority("ROLE_" + userDetail.getRole()));
                     Authentication authentication = new UsernamePasswordAuthenticationToken(
@@ -55,12 +58,14 @@ public class JwtTokenFilterHandler extends OncePerRequestFilter {
             } else {
                 throw new AuthenticationException("Missing token") {};
             }
-        } catch (AuthenticationException ex) {
+        } catch (ExpiredJwtException ex) {
             SecurityContextHolder.clearContext();
-            authenticationEntryPoint.commence(request, response, ex);
-        }
+            customJwtException.handleJwtExpiratedException(response, ex);
 
-    }
+        }catch (JwtException ex) {
+            customJwtException.handleJwtException(response, ex);
+        }
+        }
 
     private String extractTokenFromRequest(HttpServletRequest request) {
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
@@ -69,17 +74,7 @@ public class JwtTokenFilterHandler extends OncePerRequestFilter {
         }
         return null;
     }
-
-    public UserDetailResponse validateToken(String token) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", token);
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        try {
-            ResponseEntity<UserDetailResponse> response = restTemplate.exchange("http://localhost:8080/api/v1/auth/validate-token", HttpMethod.GET, entity, UserDetailResponse.class);
-            return  response.getBody();
-        } catch (HttpClientErrorException e) {
-            throw new AuthenticationException("Invalid token: " + e.getMessage()) {};
-        }
-    }
 }
+
+
+

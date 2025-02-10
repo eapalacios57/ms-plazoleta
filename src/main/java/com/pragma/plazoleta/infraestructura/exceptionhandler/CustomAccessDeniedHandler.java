@@ -3,6 +3,7 @@ package com.pragma.plazoleta.infraestructura.exceptionhandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.pragma.plazoleta.application.dto.ApiError;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,13 +15,15 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
-        ApiError apiError = new ApiError();
+        ApiError<String> apiError = new ApiError<>();
         apiError.setBackendMessage(accessDeniedException.getLocalizedMessage());
         apiError.setUrl(request.getRequestURL().toString());
         apiError.setMethod(request.getMethod());
@@ -34,4 +37,5 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         String apiErrorAsJson = objectMapper.writeValueAsString(apiError);
         response.getWriter().write(apiErrorAsJson);
     }
+
 }

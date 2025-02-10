@@ -11,11 +11,11 @@ import org.mapstruct.ReportingPolicy;
         unmappedSourcePolicy = ReportingPolicy.IGNORE)
 public interface DishEntityMapper {
 
-    @Mapping(source = "dish.categoryId", target = "categoryId.id")
-    @Mapping(source = "dish.restaurantId", target = "restaurantId.id")
+    @Mapping(source = "dish.categoryId.id", target = "categoryId.id")
+    @Mapping(source = "dish.restaurantId.id", target = "restaurantId.id")
     DishEntity toEntity(Dish dish);
 
-    @Mapping(source = "restaurantId.id", target = "restaurantId")
-    @Mapping(source = "categoryId.id", target = "categoryId")
+    @Mapping(source = "restaurantId.id", target = "restaurantId.id")
+    @Mapping(source = "categoryId.id", target = "categoryId.id")
     Dish toDish(DishEntity dishEntity);
 }

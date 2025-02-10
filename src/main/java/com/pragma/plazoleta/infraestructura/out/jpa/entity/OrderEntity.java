@@ -7,9 +7,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "categorias")
+@Table(name = "orders")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -29,7 +31,11 @@ public class OrderEntity {
     @Column(name="id_chef")
     private Long chef;
 
+    private String pin;
     @ManyToOne
     @JoinColumn(name="id_restaurant")
     private RestaurantEntity restaurant;
+
+    @OneToMany(mappedBy = "orderDish", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderDishEntity> orderDishes = new ArrayList<>();
 }

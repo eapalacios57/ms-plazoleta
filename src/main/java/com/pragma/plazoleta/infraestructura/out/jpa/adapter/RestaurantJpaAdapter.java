@@ -1,11 +1,14 @@
 package com.pragma.plazoleta.infraestructura.out.jpa.adapter;
 
+import com.pragma.plazoleta.domain.model.RestaurantList;
 import com.pragma.plazoleta.domain.model.Restaurant;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
+import com.pragma.plazoleta.infraestructura.exception.NotFoundException;
 import com.pragma.plazoleta.infraestructura.out.jpa.mapper.RestaurantEntityMapper;
 import com.pragma.plazoleta.infraestructura.out.jpa.repository.IRestaurantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 
@@ -22,12 +25,21 @@ public class RestaurantJpaAdapter implements IRestaurantPersistencePort {
 
     @Override
     public Restaurant getRestaurant(Long id) {
-        return restaurantEntityMapper.toRestaurant(restaurantRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Restaurant not exists")));
+        return restaurantEntityMapper.toRestaurant(restaurantRepository.findById(id).orElseThrow(() -> new NotFoundException("Restaurant Not Found.")));
     }
 
     @Override
-    public Page<Restaurant> getAllRestaurants(Pageable pageable) {
-        return restaurantRepository.findAllByOrderByNameAsc(pageable).map(restaurantEntityMapper::toRestaurant);
+    public RestaurantList getAllRestaurants(int size, int page) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Restaurant> pageRestaurant = restaurantRepository.findAllByOrderByNameAsc(pageable).map(restaurantEntityMapper::toRestaurant);
+        return new RestaurantList(pageRestaurant.getContent(), size, page, pageRestaurant.getTotalElements(), pageRestaurant.getTotalPages());
+    }
+
+    @Override
+    public void validateRestaurant(String nit) {
+      if(restaurantRepository.findByNit(nit).isPresent()){
+         throw new NotFoundException("Restaurant already exists");
+      }
     }
 
 

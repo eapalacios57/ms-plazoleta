@@ -1,15 +1,13 @@
 package com.pragma.plazoleta.infraestructura.out.jpa.entity;
 
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "order_dish")
+@Table(name = "order_dishes")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -19,5 +17,14 @@ public class OrderDishEntity {
     @EmbeddedId
     private  OrderDishIdEntity id;
 
-    private Long quantity;
+    private Integer quantity;
+
+    @ManyToOne
+    @JoinColumn(name = "id_order", insertable = false, updatable = false)
+    private OrderEntity orderDish;
+
+    @ManyToOne
+    @JoinColumn(name = "id_dish", insertable = false, updatable = false)
+    private DishEntity dishOrder;
+
 }

@@ -4,6 +4,7 @@ import com.pragma.plazoleta.application.dto.MessageResponse;
 import com.pragma.plazoleta.application.dto.RegisterRestaurantRequest;
 import com.pragma.plazoleta.application.dto.RestaurantsResponse;
 import com.pragma.plazoleta.application.handler.IRestaurantHandler;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,7 @@ public class RestaurantRestController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<MessageResponse> registerRestaurant(@RequestBody RegisterRestaurantRequest registerRestaurant){
+    public ResponseEntity<MessageResponse> registerRestaurant(@Valid @RequestBody RegisterRestaurantRequest registerRestaurant){
         try{
             restaurantHandler.saveRestaurant(registerRestaurant);
             return ResponseEntity.status(HttpStatus.CREATED).body(new MessageResponse("Restaurant created successfully."));
@@ -32,10 +33,10 @@ public class RestaurantRestController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<RestaurantsResponse>> getAllRestaurants(
+    public ResponseEntity<RestaurantsResponse> getAllRestaurants(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Page<RestaurantsResponse> restaurants = restaurantHandler.getAllRestaurants(page, size);
+        RestaurantsResponse restaurants = restaurantHandler.getAllRestaurants(page, size);
         return ResponseEntity.ok(restaurants);
     }
 }
